@@ -1,0 +1,9 @@
+.env
+__pycache__/
+*.pyc
+venv/
+data/johnbot.db
+data/vector_store.pkl
+data/uploads/*
+!data/uploads/.gitkeep
+.pytest_cache/

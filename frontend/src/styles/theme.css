@@ -1,0 +1,106 @@
+:root {
+  /* Heart & Honey palette */
+  --pearl: #F7F5F2;
+  --platinum: #EFE8E2;
+  --tuscany: #C0AB9A;
+  --raw-umber: #7B5C4B;
+  --old-burgundy: #3F3027;
+  --eerie-black: #171411;
+
+  --background: var(--pearl);
+  --surface: #FFFFFF;
+  --surface-secondary: var(--platinum);
+  --primary-dark: var(--eerie-black);
+  --secondary-dark: var(--old-burgundy);
+  --silver: var(--tuscany);
+  --light-silver: var(--platinum);
+  --border: #DDD1C6;
+  --text: var(--eerie-black);
+  --text-muted: #8A7A6D;
+  --accent: var(--raw-umber);
+  --accent-strong: var(--old-burgundy);
+  --accent-soft: var(--tuscany);
+  --on-accent: var(--pearl);
+  --danger: #A6402F;
+  --success: #4F7355;
+
+  --font-sans: "Inter", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-mono: "SFMono-Regular", "JetBrains Mono", Consolas, "Courier New", monospace;
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --shadow-sm: 0 1px 3px rgba(23, 20, 17, 0.06);
+  --shadow-md: 0 12px 32px rgba(23, 20, 17, 0.10);
+}
+
+[data-theme="dark"] {
+  --background: var(--eerie-black);
+  --surface: var(--old-burgundy);
+  --surface-secondary: #2C2119;
+  --primary-dark: var(--pearl);
+  --secondary-dark: var(--platinum);
+  --silver: var(--raw-umber);
+  --light-silver: #4A392E;
+  --border: #4A392E;
+  --text: var(--pearl);
+  --text-muted: #B7A79A;
+  --accent: var(--tuscany);
+  --accent-strong: var(--platinum);
+  --accent-soft: var(--raw-umber);
+  --on-accent: var(--eerie-black);
+  --danger: #E08979;
+  --success: #8FBF97;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--background);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--eerie-black);
+}
+
+code, pre, .mono {
+  font-family: var(--font-mono);
+}
+
+/* Tracked, uppercase micro-labels — the recurring typographic motif
+   throughout the app, echoing the palette's own lettered swatches. */
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--tuscany);
+  border-radius: 999px;
+}
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--raw-umber);
+}

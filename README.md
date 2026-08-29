@@ -16,7 +16,7 @@ full codebase is never sent to the model on every question.
 
 - Code upload (`.py .js .jsx .ts .tsx .java .c .cpp .html .css .sql .json .md`)
 - Local, logical code chunking (splits on functions/classes where possible)
-- Embeddings via the free-tier **Gemini Embedding API** (`gemini-embedding-001`) — same API key as chat, no separate paid embeddings provider needed
+- Embeddings via the **Jina AI Embeddings API** (`jina-embeddings-v3`) — chat still uses Gemini, so two free-tier keys power the app
 - Local vector store with cosine similarity search (configurable `TOP_K`)
 - One LLM call per question via **Gemini**
 - Real source references (file name + line range) — never fabricated
@@ -33,9 +33,9 @@ React (Vite)
    |
 FastAPI backend
    |
-   +-- Upload -> chunk -> embed -> vector store
+   +-- Upload -> chunk -> embed (Jina) -> vector store
    |
-   +-- Chat -> embed question -> vector search -> top-K chunks -> Gemini -> answer
+   +-- Chat -> embed question (Jina) -> vector search -> top-K chunks -> Gemini -> answer
 ```
 
 ## Technologies
@@ -43,8 +43,8 @@ FastAPI backend
 - Frontend: React, Vite, React Router, react-markdown, react-syntax-highlighter
 - Backend: Python, FastAPI, Uvicorn, SQLAlchemy
 - Database: SQLite
-- RAG: Gemini Embedding API (`gemini-embedding-001`, free tier) for chunk/query embeddings, a lightweight local pickle-backed vector store
-- LLM: Gemini (`gemini-2.5-flash` by default)
+- RAG: Jina AI Embeddings API (`jina-embeddings-v3`, free tier) for chunk/query embeddings, a lightweight local pickle-backed vector store
+- LLM: Gemini (`gemini-3.6-flash` by default)
 - Auth: JWT + bcrypt (passlib)
 
 ## Installation
@@ -63,15 +63,15 @@ Edit `backend/.env` and set:
 
 ```
 GEMINI_API_KEY=your_key_here
-GEMINI_MODEL=gemini-2.5-flash
-GEMINI_EMBEDDING_MODEL=gemini-embedding-001
+GEMINI_MODEL=gemini-3.6-flash
+JINA_API_KEY=your_key_here
+JINA_EMBEDDING_MODEL=jina-embeddings-v3
 ```
 
-Get a free key at https://aistudio.google.com/apikey — no credit card needed. The same
-key and free quota power both chat and embeddings, so there's nothing else to sign up
-for. Free-tier embedding calls are rate-limited (roughly 100 requests/minute, ~1,000/day
-as of early 2026); the embedder batches and retries automatically, but very large
-uploads may take a little longer or need a short pause between files.
+Get a free Gemini key at https://aistudio.google.com/apikey (chat) and a free Jina key at
+https://jina.ai/embeddings (embeddings) — no credit card needed for either. Free-tier
+embedding calls are rate-limited; the embedder batches and retries automatically, but
+very large uploads may take a little longer or need a short pause between files.
 
 ### Frontend
 
@@ -114,7 +114,8 @@ on port 8000 (see `frontend/vite.config.js`).
 |---|---|
 | `GEMINI_API_KEY` | Your free Gemini API key (never committed, never sent to the frontend) |
 | `GEMINI_MODEL` | Gemini chat model to use |
-| `GEMINI_EMBEDDING_MODEL` | Gemini embedding model to use |
+| `JINA_API_KEY` | Your free Jina AI API key (never committed, never sent to the frontend) |
+| `JINA_EMBEDDING_MODEL` | Jina embedding model to use |
 | `JWT_SECRET` | Secret used to sign auth tokens — set to a random string |
 | `TOP_K` | Number of code chunks retrieved per question |
 | `MAX_FILE_SIZE_MB` | Max upload size per file |

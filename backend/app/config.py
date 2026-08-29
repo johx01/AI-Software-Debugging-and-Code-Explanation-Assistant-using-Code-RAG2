@@ -9,12 +9,13 @@ class Settings:
     # Agent Router (LLM provider)
 # Gemini (LLM provider)
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
-    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
 
-    # Gemini (embeddings — free tier, same API key as above)
-    GEMINI_EMBEDDING_MODEL: str = os.getenv(
-        "GEMINI_EMBEDDING_MODEL",
-        "gemini-embedding-001",
+    # Jina AI (embeddings)
+    JINA_API_KEY: str = os.getenv("JINA_API_KEY", "")
+    JINA_EMBEDDING_MODEL: str = os.getenv(
+        "JINA_EMBEDDING_MODEL",
+        "jina-embeddings-v3",
     )
 
     # Auth

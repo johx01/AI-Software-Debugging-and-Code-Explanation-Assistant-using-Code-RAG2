@@ -10,7 +10,7 @@ const EXAMPLE_PROMPTS = [
   "Explain the project structure",
 ];
 
-export default function ChatWindow({ messages, onSend, loading, showSources, enterToSend }) {
+export default function ChatWindow({ messages, onSend, loading, showSources, enterToSend, userName }) {
   const endRef = useRef(null);
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export default function ChatWindow({ messages, onSend, loading, showSources, ent
     <div className="chat-window">
       {isEmpty ? (
         <div className="welcome-screen">
-          <h2>JohnBot</h2>
+          <h2>Welcome{userName ? `, ${userName}` : ""}</h2>
           <p className="welcome-subtitle">AI Code Debugging &amp; Explanation Assistant</p>
           <p className="welcome-description">
             Upload your codebase and ask questions about your code using Retrieval-Augmented Generation.
@@ -49,8 +49,8 @@ export default function ChatWindow({ messages, onSend, loading, showSources, ent
           ))}
           {loading && (
             <div className="chat-message chat-message-bot">
-              <div className="chat-message-label">JohnBot</div>
-              <div className="chat-message-bubble chat-thinking">JohnBot is thinking...</div>
+              <div className="chat-message-label">Assistant</div>
+              <div className="chat-message-bubble chat-thinking">Thinking...</div>
             </div>
           )}
           <div ref={endRef} />

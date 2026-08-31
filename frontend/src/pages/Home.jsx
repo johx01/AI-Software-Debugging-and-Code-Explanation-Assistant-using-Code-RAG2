@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ChatWindow from "../components/ChatWindow";
 import { api } from "../services/api";
+import { useAuth } from "../services/AuthContext";
 
 export default function Home({ settings }) {
   const { chatId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [conversationId, setConversationId] = useState(chatId ? Number(chatId) : null);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -51,7 +53,7 @@ export default function Home({ settings }) {
     } catch (err) {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: `JohnBot couldn't process that: ${err.message}`, sources: [] },
+        { role: "assistant", content: `Couldn't process that: ${err.message}`, sources: [] },
       ]);
     } finally {
       setLoading(false);
@@ -67,6 +69,7 @@ export default function Home({ settings }) {
         loading={loading}
         showSources={settings?.show_sources ?? true}
         enterToSend={settings?.enter_to_send ?? true}
+        userName={user?.name}
       />
     </div>
   );

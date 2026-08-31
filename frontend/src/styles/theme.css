@@ -1,56 +1,71 @@
-:root {
-  /* Heart & Honey palette */
-  --pearl: #F7F5F2;
-  --platinum: #EFE8E2;
-  --tuscany: #C0AB9A;
-  --raw-umber: #7B5C4B;
-  --old-burgundy: #3F3027;
-  --eerie-black: #171411;
+:root,
+[data-theme="light"] {
+  /* Zyricon palette — lavender-white with a violet accent */
+  --void: #F5F2FA;
+  --pine: #FFFFFF;
+  --pine-light: #ECE6F5;
+  --emerald: #7C3AED;
+  --jade: #9D5CF2;
+  --mint: #E9D9FC;
+  --sage-mist: #6B6178;
 
-  --background: var(--pearl);
-  --surface: #FFFFFF;
-  --surface-secondary: var(--platinum);
-  --primary-dark: var(--eerie-black);
-  --secondary-dark: var(--old-burgundy);
-  --silver: var(--tuscany);
-  --light-silver: var(--platinum);
-  --border: #DDD1C6;
-  --text: var(--eerie-black);
-  --text-muted: #8A7A6D;
-  --accent: var(--raw-umber);
-  --accent-strong: var(--old-burgundy);
-  --accent-soft: var(--tuscany);
-  --on-accent: var(--pearl);
-  --danger: #A6402F;
-  --success: #4F7355;
+  --background: var(--void);
+  --surface: var(--pine);
+  --surface-secondary: var(--pine-light);
+  --primary-dark: #1A1425;
+  --secondary-dark: var(--sage-mist);
+  --silver: var(--sage-mist);
+  --light-silver: var(--pine-light);
+  --border: #E0D6EE;
+  --text: #1A1425;
+  --text-muted: #6B6178;
+  --accent: var(--emerald);
+  --accent-strong: #6D28D9;
+  --accent-soft: var(--mint);
+  --on-accent: #FFFFFF;
+  --danger: #DC2626;
+  --success: #16A34A;
+  --orb-a: #E879F9;
+  --orb-b: var(--emerald);
 
   --font-sans: "Inter", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
   --font-mono: "SFMono-Regular", "JetBrains Mono", Consolas, "Courier New", monospace;
-  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-display: "Inter", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
 
   --radius-sm: 8px;
   --radius-md: 14px;
-  --shadow-sm: 0 1px 3px rgba(23, 20, 17, 0.06);
-  --shadow-md: 0 12px 32px rgba(23, 20, 17, 0.10);
+  --shadow-sm: 0 1px 3px rgba(124, 58, 237, 0.08);
+  --shadow-md: 0 20px 48px rgba(124, 58, 237, 0.14);
 }
 
 [data-theme="dark"] {
-  --background: var(--eerie-black);
-  --surface: var(--old-burgundy);
-  --surface-secondary: #2C2119;
-  --primary-dark: var(--pearl);
-  --secondary-dark: var(--platinum);
-  --silver: var(--raw-umber);
-  --light-silver: #4A392E;
-  --border: #4A392E;
-  --text: var(--pearl);
-  --text-muted: #B7A79A;
-  --accent: var(--tuscany);
-  --accent-strong: var(--platinum);
-  --accent-soft: var(--raw-umber);
-  --on-accent: var(--eerie-black);
-  --danger: #E08979;
-  --success: #8FBF97;
+  /* Zyricon palette — near-black violet with a magenta-purple accent */
+  --void: #0D0A12;
+  --pine: #17111F;
+  --pine-light: #221A2E;
+  --emerald: #7C3AED;
+  --jade: #C084FC;
+  --mint: #E879F9;
+  --sage-mist: #B9AFCB;
+
+  --background: var(--void);
+  --surface: var(--pine);
+  --surface-secondary: var(--pine-light);
+  --primary-dark: #FFFFFF;
+  --secondary-dark: var(--sage-mist);
+  --silver: var(--sage-mist);
+  --light-silver: var(--pine-light);
+  --border: rgba(255, 255, 255, 0.08);
+  --text: #F3F0F8;
+  --text-muted: #948AA6;
+  --accent: var(--emerald);
+  --accent-strong: var(--jade);
+  --accent-soft: #4C2E8A;
+  --on-accent: #FFFFFF;
+  --danger: #F87171;
+  --success: #4ADE80;
+  --orb-a: var(--mint);
+  --orb-b: var(--emerald);
 }
 
 * {
@@ -71,8 +86,8 @@ body {
 }
 
 ::selection {
-  background: var(--accent-soft);
-  color: var(--eerie-black);
+  background: var(--accent);
+  color: #FFFFFF;
 }
 
 code, pre, .mono {
@@ -98,9 +113,6 @@ code, pre, .mono {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--tuscany);
+  background: var(--surface-secondary);
   border-radius: 999px;
-}
-[data-theme="dark"] ::-webkit-scrollbar-thumb {
-  background: var(--raw-umber);
 }

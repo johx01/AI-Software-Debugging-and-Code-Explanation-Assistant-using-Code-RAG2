@@ -28,26 +28,27 @@
 }
 .sidebar-brand::before {
   content: "";
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
-  background: linear-gradient(135deg, var(--raw-umber), var(--tuscany));
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--orb-a), var(--orb-b) 70%);
+  box-shadow: inset 0 0 0 1px var(--border);
   flex-shrink: 0;
 }
 
 .btn-new-chat {
-  background: var(--accent);
-  color: var(--on-accent);
-  border: none;
+  background: var(--surface-secondary);
+  color: var(--text);
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 11px 14px;
   font-weight: 600;
   font-size: 0.9rem;
   margin-bottom: 22px;
-  transition: background 0.15s ease, transform 0.1s ease;
+  transition: background 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
 }
 .btn-new-chat:hover {
-  background: var(--accent-strong);
+  border-color: var(--accent-strong);
 }
 .btn-new-chat:active {
   transform: scale(0.98);
@@ -114,7 +115,9 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  background: var(--background);
+  background:
+    radial-gradient(ellipse 60% 45% at 50% 25%, rgba(124, 58, 237, 0.22), transparent 70%),
+    var(--background);
 }
 
 .app-header {
@@ -236,17 +239,17 @@
 
 .welcome-screen::before {
   content: "";
-  width: 46px;
-  height: 46px;
-  margin-bottom: 18px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--raw-umber), var(--tuscany));
-  box-shadow: var(--shadow-md);
+  width: 64px;
+  height: 64px;
+  margin-bottom: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--orb-a), var(--orb-b) 60%, var(--surface-secondary) 100%);
+  box-shadow: 0 0 60px 10px rgba(124, 58, 237, 0.30), 0 0 20px 4px rgba(124, 58, 237, 0.45);
 }
 
 .welcome-screen h2 {
   font-family: var(--font-display);
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: 600;
   margin: 0;
   color: var(--primary-dark);
@@ -346,27 +349,61 @@
   display: flex;
   gap: 10px;
   align-items: flex-end;
-  padding: 16px 0 20px;
-  border-top: 1px solid var(--border);
+  padding: 14px 16px;
+  margin: 0 0 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow-md);
 }
 
 .chat-input {
   flex: 1;
   resize: none;
-  border: 1px solid var(--border);
+  border: none;
   border-radius: var(--radius-md);
-  padding: 12px 14px;
+  padding: 8px 4px;
   font-family: var(--font-sans);
   font-size: 0.94rem;
   min-height: 46px;
   max-height: 160px;
-  background: var(--surface);
+  background: transparent;
   color: var(--text);
   transition: border-color 0.15s ease;
 }
+.chat-input::placeholder {
+  color: var(--text-muted);
+}
 .chat-input:focus {
   outline: none;
-  border-color: var(--accent);
+}
+
+.chat-input-bar .btn-primary {
+  background: linear-gradient(135deg, var(--accent-strong), var(--primary-dark));
+  color: var(--background);
+  border: none;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  flex-shrink: 0;
+  font-weight: 600;
+  font-size: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.chat-input-bar .btn-primary::after {
+  content: "↑";
+  font-size: 1.1rem;
+  line-height: 1;
+}
+.chat-input-bar .btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+.chat-input-bar .btn-primary:disabled {
+  background: var(--surface-secondary);
+  opacity: 0.6;
 }
 
 /* ---------- Code blocks ---------- */
@@ -444,7 +481,7 @@
 
 /* ---------- Upload ---------- */
 .upload-zone {
-  border: 1.5px dashed var(--tuscany);
+  border: 1.5px dashed var(--accent-soft);
   border-radius: var(--radius-md);
   padding: 32px;
   text-align: center;
@@ -495,18 +532,12 @@
   background: var(--light-silver);
 }
 .status-ready {
-  background: #E1EAE0;
+  background: rgba(74, 222, 128, 0.15);
   color: var(--success);
 }
-[data-theme="dark"] .status-ready {
-  background: #33422F;
-}
 .status-error {
-  background: #F3DAD3;
+  background: rgba(248, 113, 113, 0.15);
   color: var(--danger);
-}
-[data-theme="dark"] .status-error {
-  background: #4A2E28;
 }
 .status-processing,
 .status-uploading {
@@ -576,14 +607,8 @@
   justify-content: center;
   height: 100vh;
   background:
-    radial-gradient(circle at 15% 15%, var(--platinum), transparent 45%),
-    radial-gradient(circle at 85% 85%, var(--tuscany) 0%, transparent 40%),
-    var(--background);
-}
-[data-theme="dark"] .auth-page {
-  background:
-    radial-gradient(circle at 15% 15%, var(--old-burgundy), transparent 45%),
-    radial-gradient(circle at 85% 85%, var(--raw-umber) 0%, transparent 40%),
+    radial-gradient(circle at 15% 15%, rgba(232, 121, 249, 0.18), transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(124, 58, 237, 0.28) 0%, transparent 40%),
     var(--background);
 }
 .auth-card {
@@ -603,8 +628,9 @@
   width: 34px;
   height: 34px;
   margin: 0 auto 18px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--raw-umber), var(--tuscany));
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--orb-a), var(--orb-b) 70%);
+  box-shadow: inset 0 0 0 1px var(--border);
 }
 .auth-brand {
   font-family: var(--font-display);

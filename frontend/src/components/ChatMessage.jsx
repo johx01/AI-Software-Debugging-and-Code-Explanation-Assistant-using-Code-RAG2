@@ -45,7 +45,7 @@ export default function ChatMessage({ role, content, sources, showSources }) {
 
   return (
     <div className={`chat-message ${isUser ? "chat-message-user" : "chat-message-bot"}`}>
-      <div className="chat-message-label">{isUser ? "You" : "JohnBot"}</div>
+      <div className="chat-message-label">{isUser ? "You" : "Assistant"}</div>
       <div className="chat-message-bubble">
         <ReactMarkdown
           components={{

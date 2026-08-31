@@ -22,7 +22,7 @@ export default function ChatInput({ onSend, disabled, enterToSend }) {
     <form className="chat-input-bar" onSubmit={handleSubmit}>
       <textarea
         className="chat-input"
-        placeholder="Ask JohnBot about your code..."
+        placeholder="Ask anything about your code..."
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}

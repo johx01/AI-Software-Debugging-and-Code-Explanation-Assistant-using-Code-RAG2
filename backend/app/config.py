@@ -35,6 +35,13 @@ class Settings:
     # CORS
     FRONTEND_ORIGIN: str = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
 
+    # GitHub OAuth
+    GITHUB_CLIENT_ID: str = os.getenv("GITHUB_CLIENT_ID", "")
+    GITHUB_CLIENT_SECRET: str = os.getenv("GITHUB_CLIENT_SECRET", "")
+    GITHUB_OAUTH_CALLBACK_URL: str = os.getenv(
+        "GITHUB_OAUTH_CALLBACK_URL", "http://localhost:8000/github/callback"
+    )
+
 
 settings = Settings()
 

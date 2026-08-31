@@ -43,6 +43,7 @@ export default function Files() {
           <thead>
             <tr>
               <th>Filename</th>
+              <th>Source</th>
               <th>Language</th>
               <th>Status</th>
               <th>Chunks</th>
@@ -54,6 +55,7 @@ export default function Files() {
             {files.map((f) => (
               <tr key={f.id}>
                 <td className="mono">{f.file_name}</td>
+                <td>{f.source === "github" ? "GitHub" : "Upload"}</td>
                 <td>{f.language || "—"}</td>
                 <td>
                   <span className={`status-badge status-${f.status}`}>{STATUS_LABELS[f.status] || f.status}</span>

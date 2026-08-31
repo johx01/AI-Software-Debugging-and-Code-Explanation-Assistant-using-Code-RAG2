@@ -28,6 +28,10 @@ class User(Base):
     conversations = relationship("Conversation", back_populates="user", cascade="all, delete-orphan")
     files = relationship("FileRecord", back_populates="user", cascade="all, delete-orphan")
     settings = relationship("UserSettings", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    github_connection = relationship(
+        "GithubConnection", back_populates="user", uselist=False, cascade="all, delete-orphan"
+    )
+    repo_ingest_jobs = relationship("RepoIngestJob", back_populates="user", cascade="all, delete-orphan")
 
 
 class Conversation(Base):
@@ -69,6 +73,8 @@ class FileRecord(Base):
     content_hash = Column(String, nullable=True)
     error_message = Column(Text, nullable=True)
     created_at = Column(DateTime, default=now)
+    source = Column(String, default="upload")  # upload, github
+    repo_ingest_job_id = Column(Integer, ForeignKey("repo_ingest_jobs.id"), nullable=True)
 
     user = relationship("User", back_populates="files")
 
@@ -83,6 +89,34 @@ class UserSettings(Base):
     show_sources = Column(Integer, default=1)
 
     user = relationship("User", back_populates="settings")
+
+
+class GithubConnection(Base):
+    __tablename__ = "github_connections"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    github_user_id = Column(String, nullable=False)
+    github_login = Column(String, nullable=False)
+    access_token = Column(String, nullable=False)
+    connected_at = Column(DateTime, default=now)
+
+    user = relationship("User", back_populates="github_connection")
+
+
+class RepoIngestJob(Base):
+    __tablename__ = "repo_ingest_jobs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    repo_full_name = Column(String, nullable=False)
+    status = Column(String, default="pending")  # pending, fetching, processing, ready, error
+    total_files = Column(Integer, default=0)
+    processed_files = Column(Integer, default=0)
+    error_message = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=now)
+
+    user = relationship("User", back_populates="repo_ingest_jobs")
 
 
 def init_db():

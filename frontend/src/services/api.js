@@ -58,6 +58,14 @@ export const api = {
   // Settings
   getSettings: () => request("/settings"),
   updateSettings: (payload) => request("/settings", { method: "PUT", body: JSON.stringify(payload) }),
+
+  // GitHub
+  getGithubConnection: () => request("/github/connection"),
+  getGithubConnectUrl: () => request("/github/connect"),
+  disconnectGithub: () => request("/github/connection", { method: "DELETE" }),
+  listGithubRepos: () => request("/github/repos"),
+  ingestGithubRepo: (owner, repo) => request(`/github/repos/${owner}/${repo}/ingest`, { method: "POST" }),
+  getGithubJob: (jobId) => request(`/github/jobs/${jobId}`),
 };
 
 export function setToken(token) {

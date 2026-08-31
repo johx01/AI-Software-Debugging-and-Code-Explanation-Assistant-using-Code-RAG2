@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.database.database import init_db
-from app.api import routes_auth, routes_upload, routes_chat, routes_files, routes_settings
+from app.api import routes_auth, routes_upload, routes_chat, routes_files, routes_settings, routes_github
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("johnbot")
@@ -37,3 +37,4 @@ app.include_router(routes_upload.router)
 app.include_router(routes_chat.router)
 app.include_router(routes_files.router)
 app.include_router(routes_settings.router)
+app.include_router(routes_github.router)

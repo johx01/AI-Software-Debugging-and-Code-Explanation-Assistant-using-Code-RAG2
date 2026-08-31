@@ -38,6 +38,39 @@ class FileOut(BaseModel):
     status: str
     chunk_count: int
     created_at: str
+    source: str = "upload"
+
+    class Config:
+        from_attributes = True
+
+
+# ---------- GitHub ----------
+class GithubConnectionOut(BaseModel):
+    connected: bool
+    github_login: Optional[str] = None
+    connected_at: Optional[str] = None
+
+
+class GithubConnectUrlOut(BaseModel):
+    authorize_url: str
+
+
+class GithubRepoOut(BaseModel):
+    full_name: str
+    name: str
+    owner: str
+    private: bool
+    default_branch: str
+
+
+class RepoIngestJobOut(BaseModel):
+    id: int
+    repo_full_name: str
+    status: str
+    total_files: int
+    processed_files: int
+    error_message: Optional[str] = None
+    created_at: str
 
     class Config:
         from_attributes = True

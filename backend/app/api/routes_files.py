@@ -18,7 +18,7 @@ def list_files(db: Session = Depends(get_db), current_user: User = Depends(get_c
         FileOut(
             id=r.id, file_name=r.file_name, language=r.language,
             status=r.status, chunk_count=r.chunk_count,
-            created_at=r.created_at.isoformat(),
+            created_at=r.created_at.isoformat(), source=r.source or "upload",
         )
         for r in records
     ]

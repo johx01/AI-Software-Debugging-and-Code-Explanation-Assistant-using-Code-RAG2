@@ -1,14 +1,46 @@
-"""SQLite database setup and ORM models for JohnBot."""
+"""Database setup and ORM models for JohnBot."""
+import os
 import datetime
+
 from sqlalchemy import (
-    create_engine, Column, Integer, String, Text, DateTime, ForeignKey, ForeignKeyConstraint
+    create_engine,
+    Column,
+    Integer,
+    String,
+    Text,
+    DateTime,
+    ForeignKey,
 )
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
-DATABASE_URL = "sqlite:///./data/johnbot.db"
 
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Use Neon PostgreSQL when DATABASE_URL is available.
+# Fall back to local SQLite for development.
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/johnbot.db")
+
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+if DATABASE_URL.startswith("postgresql://"):
+    # Neon PostgreSQL
+    engine = create_engine(
+        DATABASE_URL,
+        pool_pre_ping=True,
+    )
+else:
+    # Local SQLite
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={"check_same_thread": False},
+    )
+
+
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine,
+)
+
 Base = declarative_base()
 
 
@@ -25,13 +57,33 @@ class User(Base):
     password_hash = Column(String, nullable=False)
     created_at = Column(DateTime, default=now)
 
-    conversations = relationship("Conversation", back_populates="user", cascade="all, delete-orphan")
-    files = relationship("FileRecord", back_populates="user", cascade="all, delete-orphan")
-    settings = relationship("UserSettings", back_populates="user", uselist=False, cascade="all, delete-orphan")
-    github_connection = relationship(
-        "GithubConnection", back_populates="user", uselist=False, cascade="all, delete-orphan"
+    conversations = relationship(
+        "Conversation",
+        back_populates="user",
+        cascade="all, delete-orphan",
     )
-    repo_ingest_jobs = relationship("RepoIngestJob", back_populates="user", cascade="all, delete-orphan")
+    files = relationship(
+        "FileRecord",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    settings = relationship(
+        "UserSettings",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+    github_connection = relationship(
+        "GithubConnection",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+    repo_ingest_jobs = relationship(
+        "RepoIngestJob",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
 
 
 class Conversation(Base):
@@ -44,20 +96,31 @@ class Conversation(Base):
     updated_at = Column(DateTime, default=now, onupdate=now)
 
     user = relationship("User", back_populates="conversations")
-    messages = relationship("Message", back_populates="conversation", cascade="all, delete-orphan")
+    messages = relationship(
+        "Message",
+        back_populates="conversation",
+        cascade="all, delete-orphan",
+    )
 
 
 class Message(Base):
     __tablename__ = "messages"
 
     id = Column(Integer, primary_key=True, index=True)
-    conversation_id = Column(Integer, ForeignKey("conversations.id"), nullable=False)
-    role = Column(String, nullable=False)  # "user" or "assistant"
+    conversation_id = Column(
+        Integer,
+        ForeignKey("conversations.id"),
+        nullable=False,
+    )
+    role = Column(String, nullable=False)
     content = Column(Text, nullable=False)
-    sources = Column(Text, nullable=True)  # JSON string of source references
+    sources = Column(Text, nullable=True)
     created_at = Column(DateTime, default=now)
 
-    conversation = relationship("Conversation", back_populates="messages")
+    conversation = relationship(
+        "Conversation",
+        back_populates="messages",
+    )
 
 
 class FileRecord(Base):
@@ -68,13 +131,17 @@ class FileRecord(Base):
     file_name = Column(String, nullable=False)
     file_path = Column(String, nullable=False)
     language = Column(String, nullable=True)
-    status = Column(String, default="uploading")  # uploading, processing, ready, error
+    status = Column(String, default="uploading")
     chunk_count = Column(Integer, default=0)
     content_hash = Column(String, nullable=True)
     error_message = Column(Text, nullable=True)
     created_at = Column(DateTime, default=now)
-    source = Column(String, default="upload")  # upload, github
-    repo_ingest_job_id = Column(Integer, ForeignKey("repo_ingest_jobs.id"), nullable=True)
+    source = Column(String, default="upload")
+    repo_ingest_job_id = Column(
+        Integer,
+        ForeignKey("repo_ingest_jobs.id"),
+        nullable=True,
+    )
 
     user = relationship("User", back_populates="files")
 
@@ -83,9 +150,14 @@ class UserSettings(Base):
     __tablename__ = "user_settings"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
-    theme = Column(String, default="system")  # light, dark, system
-    enter_to_send = Column(Integer, default=1)  # boolean as int
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id"),
+        unique=True,
+        nullable=False,
+    )
+    theme = Column(String, default="system")
+    enter_to_send = Column(Integer, default=1)
     show_sources = Column(Integer, default=1)
 
     user = relationship("User", back_populates="settings")
@@ -95,7 +167,12 @@ class GithubConnection(Base):
     __tablename__ = "github_connections"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id"),
+        unique=True,
+        nullable=False,
+    )
     github_user_id = Column(String, nullable=False)
     github_login = Column(String, nullable=False)
     access_token = Column(String, nullable=False)
@@ -110,7 +187,7 @@ class RepoIngestJob(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     repo_full_name = Column(String, nullable=False)
-    status = Column(String, default="pending")  # pending, fetching, processing, ready, error
+    status = Column(String, default="pending")
     total_files = Column(Integer, default=0)
     processed_files = Column(Integer, default=0)
     error_message = Column(Text, nullable=True)

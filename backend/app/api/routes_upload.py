@@ -1,11 +1,11 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 
 from app.database.database import get_db, User
 from app.models.schemas import FileOut
-from app.services.file_service import save_and_ingest
+from app.services.file_service import save_and_ingest, SkipFile
 from app.utils.auth_utils import get_current_user
 
 
@@ -19,16 +19,26 @@ async def upload_files(
     current_user: User = Depends(get_current_user),
 ):
     results = []
+    # A folder upload sends many files at once; skip ones that don't qualify
+    # (unsupported type, empty, too large, excluded dir) instead of failing the batch.
+    lenient = len(files) > 1
 
     for file in files:
         content = await file.read()
-        record = save_and_ingest(
-            db,
-            current_user.id,
-            file,
-            content,
-        )
+        try:
+            record = save_and_ingest(
+                db,
+                current_user.id,
+                file,
+                content,
+                lenient=lenient,
+            )
+        except SkipFile:
+            continue
         results.append(record)
+
+    if not results:
+        raise HTTPException(status_code=400, detail="No supported files found to upload")
 
     return [
         FileOut(

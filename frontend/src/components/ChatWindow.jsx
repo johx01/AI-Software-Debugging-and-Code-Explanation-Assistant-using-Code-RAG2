@@ -10,7 +10,16 @@ const EXAMPLE_PROMPTS = [
   "Explain the project structure",
 ];
 
-export default function ChatWindow({ messages, onSend, loading, showSources, enterToSend, userName }) {
+export default function ChatWindow({
+  messages,
+  onSend,
+  onFilesSelected,
+  uploading,
+  loading,
+  showSources,
+  enterToSend,
+  userName,
+}) {
   const endRef = useRef(null);
 
   useEffect(() => {
@@ -57,7 +66,13 @@ export default function ChatWindow({ messages, onSend, loading, showSources, ent
         </div>
       )}
 
-      <ChatInput onSend={onSend} disabled={loading} enterToSend={enterToSend} />
+      <ChatInput
+        onSend={onSend}
+        onFilesSelected={onFilesSelected}
+        uploading={uploading}
+        disabled={loading}
+        enterToSend={enterToSend}
+      />
     </div>
   );
 }

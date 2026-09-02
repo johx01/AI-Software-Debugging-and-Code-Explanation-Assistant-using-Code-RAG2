@@ -11,6 +11,7 @@ export default function Home({ settings }) {
   const [conversationId, setConversationId] = useState(chatId ? Number(chatId) : null);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -109,12 +110,49 @@ export default function Home({ settings }) {
     }
   }
 
+  function describeFiles(files) {
+    if (files.length <= 3) return files.join(", ");
+    return `${files.slice(0, 3).join(", ")}, and ${files.length - 3} more`;
+  }
+
+  async function handleFilesSelected(fileList) {
+    setError(null);
+    const names = Array.from(fileList).map((f) => f.webkitRelativePath || f.name);
+    const statusId = `status-${Date.now()}`;
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "assistant",
+        content: `Uploading and indexing ${names.length} file(s): ${describeFiles(names)}…`,
+        sources: [],
+        id: statusId,
+      },
+    ]);
+    setUploading(true);
+    try {
+      const results = await api.uploadFiles(fileList);
+      const readyNames = results.map((f) => f.file_name);
+      const skipped = names.length - results.length;
+      const skippedNote = skipped > 0 ? ` (${skipped} file(s) skipped as unsupported/excluded)` : "";
+      updateStatusMessage(
+        statusId,
+        `Indexed ${results.length} file(s): ${describeFiles(readyNames)}${skippedNote}. Ask me anything about it.`
+      );
+    } catch (err) {
+      updateStatusMessage(statusId, `Couldn't upload ${describeFiles(names)}: ${err.message}`);
+    } finally {
+      setUploading(false);
+    }
+  }
+
   return (
     <div className="page-chat">
       {error && <p className="form-error">{error}</p>}
       <ChatWindow
         messages={messages}
         onSend={handleSend}
+        onFilesSelected={handleFilesSelected}
+        uploading={uploading}
         loading={loading}
         showSources={settings?.show_sources ?? true}
         enterToSend={settings?.enter_to_send ?? true}

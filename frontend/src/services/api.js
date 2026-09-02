@@ -42,7 +42,7 @@ export const api = {
   // Files
   uploadFiles: (fileList) => {
     const formData = new FormData();
-    Array.from(fileList).forEach((f) => formData.append("files", f));
+    Array.from(fileList).forEach((f) => formData.append("files", f, f.webkitRelativePath || f.name));
     return request("/upload", { method: "POST", body: formData });
   },
   listFiles: () => request("/files"),

@@ -49,3 +49,10 @@ SUPPORTED_EXTENSIONS = {
     ".py", ".js", ".jsx", ".ts", ".tsx", ".java", ".c", ".cpp",
     ".html", ".css", ".sql", ".json", ".md",
 }
+
+# Directories skipped when ingesting an uploaded folder (dependency/build/vcs noise).
+EXCLUDED_DIR_NAMES = {
+    "node_modules", ".git", ".svn", ".hg", "dist", "build", "out",
+    "__pycache__", ".venv", "venv", "env", ".next", ".cache",
+    "coverage", ".pytest_cache", ".idea", ".vscode", "target",
+}

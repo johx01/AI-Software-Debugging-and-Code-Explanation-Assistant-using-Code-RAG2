@@ -71,9 +71,15 @@ class RepoIngestJobOut(BaseModel):
     processed_files: int
     error_message: Optional[str] = None
     created_at: str
+    conversation_id: Optional[int] = None
 
     class Config:
         from_attributes = True
+
+
+class GithubUrlIngestRequest(BaseModel):
+    url: str
+    conversation_id: Optional[int] = None
 
 
 # ---------- Chat ----------

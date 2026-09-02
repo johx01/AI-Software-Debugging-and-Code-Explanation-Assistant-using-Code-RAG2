@@ -145,6 +145,11 @@ class FileRecord(Base):
         ForeignKey("repo_ingest_jobs.id"),
         nullable=True,
     )
+    conversation_id = Column(
+        Integer,
+        ForeignKey("conversations.id"),
+        nullable=True,
+    )
 
     user = relationship("User", back_populates="files")
 
@@ -195,6 +200,11 @@ class RepoIngestJob(Base):
     processed_files = Column(Integer, default=0)
     error_message = Column(Text, nullable=True)
     created_at = Column(DateTime, default=now)
+    conversation_id = Column(
+        Integer,
+        ForeignKey("conversations.id"),
+        nullable=True,
+    )
 
     user = relationship("User", back_populates="repo_ingest_jobs")
 

@@ -9,12 +9,19 @@ from app.services import llm_service
 from app.services.retrieval_service import retrieve_relevant_chunks
 
 
-def get_user_ready_file_ids(db: Session, user_id: int) -> set:
-    rows = (
-        db.query(FileRecord.id)
-        .filter(FileRecord.user_id == user_id, FileRecord.status == "ready")
-        .all()
+def get_user_ready_file_ids(db: Session, user_id: int, conversation_id: int = None) -> set:
+    """Ready files visible to this chat turn: library-wide files (conversation_id is null)
+    plus any files ingested specifically into this conversation (e.g. a pasted GitHub repo URL)."""
+    query = db.query(FileRecord.id).filter(
+        FileRecord.user_id == user_id, FileRecord.status == "ready"
     )
+    if conversation_id is not None:
+        query = query.filter(
+            (FileRecord.conversation_id.is_(None)) | (FileRecord.conversation_id == conversation_id)
+        )
+    else:
+        query = query.filter(FileRecord.conversation_id.is_(None))
+    rows = query.all()
     return {r[0] for r in rows}
 
 
@@ -36,7 +43,7 @@ def answer_question(db: Session, user_id: int, conversation_id: int, question: s
     question -> embed -> vector search -> retrieved chunks -> context -> one LLM call -> answer
     Returns (answer_text, sources) where sources only reflect actually retrieved chunks.
     """
-    user_file_ids = get_user_ready_file_ids(db, user_id)
+    user_file_ids = get_user_ready_file_ids(db, user_id, conversation_id)
     chunks = retrieve_relevant_chunks(question, user_file_ids, top_k=settings.TOP_K)
     history = get_recent_history(db, conversation_id)
 

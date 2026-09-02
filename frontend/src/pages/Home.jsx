@@ -39,11 +39,60 @@ export default function Home({ settings }) {
     }
   }
 
+  const GITHUB_URL_RE = /github\.com\/[\w.-]+\/[\w.-]+/i;
+
+  function updateStatusMessage(statusId, content) {
+    setMessages((prev) => prev.map((m) => (m.id === statusId ? { ...m, content } : m)));
+  }
+
+  function pollGithubJob(job, statusId) {
+    return new Promise((resolve, reject) => {
+      const check = async () => {
+        try {
+          const updated = await api.getGithubJob(job.id);
+          if (updated.status === "ready") {
+            updateStatusMessage(
+              statusId,
+              `Imported **${updated.repo_full_name}** — ${updated.processed_files} file(s) indexed.`
+            );
+            resolve(updated);
+          } else if (updated.status === "error") {
+            reject(new Error(updated.error_message || "Repo import failed"));
+          } else {
+            updateStatusMessage(
+              statusId,
+              `Importing **${updated.repo_full_name}**… ${updated.processed_files}/${updated.total_files || "?"} files (${updated.status})`
+            );
+            setTimeout(check, 2000);
+          }
+        } catch (err) {
+          reject(err);
+        }
+      };
+      check();
+    });
+  }
+
+  async function importRepoFromMessage(text) {
+    const match = text.match(GITHUB_URL_RE);
+    if (!match) return;
+
+    const statusId = `status-${Date.now()}`;
+    setMessages((prev) => [
+      ...prev,
+      { role: "assistant", content: `Importing **${match[0]}**…`, sources: [], id: statusId },
+    ]);
+
+    const job = await api.ingestGithubUrl(match[0], conversationId);
+    await pollGithubJob(job, statusId);
+  }
+
   async function handleSend(text) {
     setError(null);
     setMessages((prev) => [...prev, { role: "user", content: text, sources: [] }]);
     setLoading(true);
     try {
+      await importRepoFromMessage(text);
       const res = await api.sendMessage(conversationId, text);
       setMessages((prev) => [...prev, { role: "assistant", content: res.reply, sources: res.sources }]);
       if (!conversationId) {

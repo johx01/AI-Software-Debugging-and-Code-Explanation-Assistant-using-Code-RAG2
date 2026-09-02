@@ -5,11 +5,12 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 from app.config import settings as app_settings
-from app.database.database import get_db, User, GithubConnection, RepoIngestJob
+from app.database.database import get_db, User, GithubConnection, RepoIngestJob, Conversation
 from app.models.schemas import (
     GithubConnectionOut,
     GithubConnectUrlOut,
     GithubRepoOut,
+    GithubUrlIngestRequest,
     RepoIngestJobOut,
 )
 from app.services import github_service
@@ -159,6 +160,83 @@ def list_repos(
     return [GithubRepoOut(**r) for r in repos]
 
 
+def _job_out(job: RepoIngestJob) -> RepoIngestJobOut:
+    return RepoIngestJobOut(
+        id=job.id,
+        repo_full_name=job.repo_full_name,
+        status=job.status,
+        total_files=job.total_files,
+        processed_files=job.processed_files,
+        error_message=job.error_message,
+        created_at=job.created_at.isoformat(),
+        conversation_id=job.conversation_id,
+    )
+
+
+@router.post("/ingest-url", response_model=RepoIngestJobOut)
+def ingest_url(
+    payload: GithubUrlIngestRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Ingest any GitHub repo URL (public, or private if the user's own token can see it) —
+    used for repo links pasted directly into chat, without requiring a GitHub connection."""
+    parsed = github_service.find_github_repo_url(payload.url)
+    if not parsed:
+        raise HTTPException(status_code=400, detail="No GitHub repository URL found")
+
+    if payload.conversation_id is not None:
+        conversation = (
+            db.query(Conversation)
+            .filter(
+                Conversation.id == payload.conversation_id,
+                Conversation.user_id == current_user.id,
+            )
+            .first()
+        )
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+
+    conn = (
+        db.query(GithubConnection)
+        .filter(GithubConnection.user_id == current_user.id)
+        .first()
+    )
+    access_token = conn.access_token if conn else None
+
+    try:
+        repo_meta = github_service.fetch_repo_meta(parsed["owner"], parsed["repo"], access_token)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=502, detail=f"Could not reach GitHub: {exc}")
+
+    branch = parsed["branch"] or repo_meta["default_branch"]
+
+    job = RepoIngestJob(
+        user_id=current_user.id,
+        repo_full_name=repo_meta["full_name"],
+        status="pending",
+        conversation_id=payload.conversation_id,
+    )
+    db.add(job)
+    db.commit()
+    db.refresh(job)
+
+    background_tasks.add_task(
+        github_service.ingest_repo,
+        job.id,
+        access_token,
+        parsed["owner"],
+        parsed["repo"],
+        branch,
+        payload.conversation_id,
+    )
+
+    return _job_out(job)
+
+
 @router.post(
     "/repos/{owner}/{repo}/ingest",
     response_model=RepoIngestJobOut,
@@ -205,15 +283,7 @@ def ingest_repo(
         repo_meta["default_branch"],
     )
 
-    return RepoIngestJobOut(
-        id=job.id,
-        repo_full_name=job.repo_full_name,
-        status=job.status,
-        total_files=job.total_files,
-        processed_files=job.processed_files,
-        error_message=job.error_message,
-        created_at=job.created_at.isoformat(),
-    )
+    return _job_out(job)
 
 
 @router.get("/jobs/{job_id}", response_model=RepoIngestJobOut)
@@ -237,12 +307,4 @@ def get_job(
             detail="Job not found",
         )
 
-    return RepoIngestJobOut(
-        id=job.id,
-        repo_full_name=job.repo_full_name,
-        status=job.status,
-        total_files=job.total_files,
-        processed_files=job.processed_files,
-        error_message=job.error_message,
-        created_at=job.created_at.isoformat(),
-    )
+    return _job_out(job)

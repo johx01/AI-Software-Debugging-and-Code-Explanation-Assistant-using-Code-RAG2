@@ -3,6 +3,8 @@ import base64
 import hashlib
 import logging
 import os
+import re
+from typing import Optional
 
 import requests
 
@@ -14,6 +16,44 @@ from app.rag.vector_store import get_vector_store
 logger = logging.getLogger("johnbot")
 
 GITHUB_API = "https://api.github.com"
+
+# Matches github.com/{owner}/{repo}[/tree/{branch}[/{path}]] (with or without scheme, optional .git suffix)
+GITHUB_URL_RE = re.compile(
+    r"github\.com/(?P<owner>[\w.-]+)/(?P<repo>[\w.-]+?)"
+    r"(?:\.git)?(?:/tree/(?P<branch>[\w.-]+))?(?:/\S*)?(?:\s|$)"
+)
+
+
+def find_github_repo_url(text: str) -> Optional[dict]:
+    """Scans free-form text for the first GitHub repo URL and returns its parts, if any."""
+    match = GITHUB_URL_RE.search(text)
+    if not match:
+        return None
+    return {
+        "owner": match.group("owner"),
+        "repo": match.group("repo"),
+        "branch": match.group("branch"),
+        "url": match.group(0).strip(),
+    }
+
+
+def _auth_headers(access_token: Optional[str]) -> dict:
+    headers = {"Accept": "application/vnd.github+json"}
+    if access_token:
+        headers["Authorization"] = f"token {access_token}"
+    return headers
+
+
+def fetch_repo_meta(owner: str, repo: str, access_token: Optional[str] = None) -> dict:
+    resp = requests.get(
+        f"{GITHUB_API}/repos/{owner}/{repo}",
+        headers=_auth_headers(access_token),
+        timeout=15,
+    )
+    if resp.status_code == 404:
+        raise ValueError(f"Repository {owner}/{repo} not found or not accessible")
+    resp.raise_for_status()
+    return resp.json()
 
 
 def exchange_code_for_token(code: str) -> str:
@@ -77,8 +117,8 @@ def list_user_repos(access_token: str) -> list[dict]:
     ]
 
 
-def fetch_repo_tree(access_token: str, owner: str, repo: str, branch: str) -> list[dict]:
-    headers = {"Authorization": f"token {access_token}", "Accept": "application/vnd.github+json"}
+def fetch_repo_tree(access_token: Optional[str], owner: str, repo: str, branch: str) -> list[dict]:
+    headers = _auth_headers(access_token)
     resp = requests.get(
         f"{GITHUB_API}/repos/{owner}/{repo}/git/trees/{branch}",
         headers=headers,
@@ -98,8 +138,8 @@ def fetch_repo_tree(access_token: str, owner: str, repo: str, branch: str) -> li
     ]
 
 
-def fetch_file_content(access_token: str, owner: str, repo: str, path: str) -> bytes:
-    headers = {"Authorization": f"token {access_token}", "Accept": "application/vnd.github+json"}
+def fetch_file_content(access_token: Optional[str], owner: str, repo: str, path: str) -> bytes:
+    headers = _auth_headers(access_token)
     resp = requests.get(f"{GITHUB_API}/repos/{owner}/{repo}/contents/{path}", headers=headers, timeout=15)
     resp.raise_for_status()
     data = resp.json()
@@ -108,7 +148,14 @@ def fetch_file_content(access_token: str, owner: str, repo: str, path: str) -> b
     return base64.b64decode(data["content"])
 
 
-def ingest_repo(job_id: int, access_token: str, owner: str, repo: str, branch: str):
+def ingest_repo(
+    job_id: int,
+    access_token: Optional[str],
+    owner: str,
+    repo: str,
+    branch: str,
+    conversation_id: Optional[int] = None,
+):
     """Background task: fetch a repo's files and run them through the existing RAG pipeline."""
     db = SessionLocal()
     try:
@@ -131,7 +178,8 @@ def ingest_repo(job_id: int, access_token: str, owner: str, repo: str, branch: s
         job.status = "processing"
         db.commit()
 
-        user_dir = os.path.join(settings.UPLOAD_DIR, str(job.user_id), "github", repo)
+        scope = f"conv{conversation_id}" if conversation_id else "library"
+        user_dir = os.path.join(settings.UPLOAD_DIR, str(job.user_id), "github", scope, repo)
         os.makedirs(user_dir, exist_ok=True)
 
         for blob in blobs:
@@ -143,7 +191,11 @@ def ingest_repo(job_id: int, access_token: str, owner: str, repo: str, branch: s
 
                 existing = (
                     db.query(FileRecord)
-                    .filter(FileRecord.user_id == job.user_id, FileRecord.content_hash == content_hash)
+                    .filter(
+                        FileRecord.user_id == job.user_id,
+                        FileRecord.content_hash == content_hash,
+                        FileRecord.conversation_id == conversation_id,
+                    )
                     .first()
                 )
                 if existing and existing.status == "ready":
@@ -164,6 +216,7 @@ def ingest_repo(job_id: int, access_token: str, owner: str, repo: str, branch: s
                     content_hash=content_hash,
                     source="github",
                     repo_ingest_job_id=job.id,
+                    conversation_id=conversation_id,
                 )
                 db.add(record)
                 db.commit()

@@ -3,9 +3,8 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
 import Home from "./pages/Home";
-import History from "./pages/History";
 import Files from "./pages/Files";
-import SettingsPage from "./pages/Settings";
+import SettingsPanel from "./components/SettingsPanel";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { useAuth } from "./services/AuthContext";
@@ -14,13 +13,12 @@ import { useTheme } from "./services/ThemeContext";
 
 const PAGE_TITLES = {
   "/": "Chat",
-  "/history": "History",
   "/files": "Files",
-  "/settings": "Settings",
 };
 
 function PrivateLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [settings, setSettings] = useState(null);
   const location = useLocation();
   const { setTheme } = useTheme();
@@ -46,7 +44,11 @@ function PrivateLayout() {
 
   return (
     <div className="app-layout">
-      <Sidebar collapsed={!sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        collapsed={!sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onOpenSettings={() => setSettingsOpen(true)}
+      />
       {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
       <div className="app-main">
         <Header title={title} onMenuClick={() => setSidebarOpen((v) => !v)} />
@@ -54,13 +56,17 @@ function PrivateLayout() {
           <Routes>
             <Route path="/" element={<Home settings={settings} />} />
             <Route path="/chat/:chatId" element={<Home settings={settings} />} />
-            <Route path="/history" element={<History />} />
             <Route path="/files" element={<Files />} />
-            <Route path="/settings" element={<SettingsPage settings={settings} onUpdate={handleUpdateSettings} />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
       </div>
+      <SettingsPanel
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        settings={settings}
+        onUpdate={handleUpdateSettings}
+      />
     </div>
   );
 }

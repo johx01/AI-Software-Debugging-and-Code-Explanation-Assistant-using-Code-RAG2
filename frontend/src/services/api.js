@@ -65,6 +65,8 @@ export const api = {
   disconnectGithub: () => request("/github/connection", { method: "DELETE" }),
   listGithubRepos: () => request("/github/repos"),
   ingestGithubRepo: (owner, repo) => request(`/github/repos/${owner}/${repo}/ingest`, { method: "POST" }),
+  ingestGithubUrl: (url, conversationId) =>
+    request("/github/ingest-url", { method: "POST", body: JSON.stringify({ url, conversation_id: conversationId }) }),
   getGithubJob: (jobId) => request(`/github/jobs/${jobId}`),
 };
 

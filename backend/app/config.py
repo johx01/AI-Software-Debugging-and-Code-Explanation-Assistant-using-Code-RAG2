@@ -26,8 +26,12 @@ class Settings:
     # RAG
     TOP_K: int = int(os.getenv("TOP_K", "5"))
     MAX_FILE_SIZE_MB: int = int(os.getenv("MAX_FILE_SIZE_MB", "2"))
-    UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", "./data/uploads")
-    VECTOR_STORE_PATH: str = os.getenv("VECTOR_STORE_PATH", "./data/vector_store.pkl")
+    # Vercel's serverless filesystem is read-only outside of /tmp.
+    _DEFAULT_DATA_DIR = "/tmp/data" if os.getenv("VERCEL") else "./data"
+    UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", f"{_DEFAULT_DATA_DIR}/uploads")
+    VECTOR_STORE_PATH: str = os.getenv(
+        "VECTOR_STORE_PATH", f"{_DEFAULT_DATA_DIR}/vector_store.pkl"
+    )
 
     # Chat context
     MAX_HISTORY_MESSAGES: int = int(os.getenv("MAX_HISTORY_MESSAGES", "6"))

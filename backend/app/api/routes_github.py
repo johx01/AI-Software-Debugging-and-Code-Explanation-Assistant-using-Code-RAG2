@@ -85,7 +85,7 @@ def callback(
         gh_user = github_service.fetch_github_user(access_token)
     except Exception as exc:  # noqa: BLE001
         return RedirectResponse(
-            f"{app_settings.FRONTEND_ORIGIN}/settings?github_error={exc}"
+            f"{app_settings.FRONTEND_ORIGIN}/?github_error={exc}"
         )
 
     conn = (
@@ -105,7 +105,7 @@ def callback(
     db.commit()
 
     return RedirectResponse(
-        f"{app_settings.FRONTEND_ORIGIN}/settings?github=connected"
+        f"{app_settings.FRONTEND_ORIGIN}/?github=connected"
     )
 
 

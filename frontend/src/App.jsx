@@ -34,6 +34,14 @@ function PrivateLayout() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("github") || params.get("github_error")) {
+      setSettingsOpen(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search]);
+
   async function handleUpdateSettings(partial) {
     const updated = await api.updateSettings(partial);
     setSettings(updated);

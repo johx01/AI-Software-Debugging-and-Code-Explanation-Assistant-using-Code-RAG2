@@ -1,4 +1,4 @@
-# JohnBot — AI Software Debugging and Code Explanation Assistant using Code RAG
+## JohnBot — AI Software Debugging and Code Explanation Assistant using Code RAG
 
 ## Overview
 
